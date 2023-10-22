@@ -11,7 +11,7 @@ RSpec.describe "Structs" do
   describe "with a single required attribute" do
     let(:struct) do
       Class.new(Dry::Struct) do
-        attribute :a, DryTypes::String
+        attribute :a, Dry::Typescript::DryTypes::String
       end
     end
 
@@ -29,7 +29,7 @@ RSpec.describe "Structs" do
   describe "with a single optional attribute" do
     let(:struct) do
       Class.new(Dry::Struct) do
-        attribute? :a, DryTypes::String
+        attribute? :a, Dry::Typescript::DryTypes::String
       end
     end
 
@@ -48,9 +48,9 @@ RSpec.describe "Structs" do
     let(:struct) do
       Class.new(Dry::Struct) do
         attribute :nested do
-          attribute :a, DryTypes::String
+          attribute :a, Dry::Typescript::DryTypes::String
         end
-        attribute :b, DryTypes::String
+        attribute :b, Dry::Typescript::DryTypes::String
       end
     end
 

@@ -30,9 +30,11 @@ Given a Ruby file with the following contents:
 ```ruby
 require 'dry-types'
 require 'dry-struct'
+require 'dry/typescript'
 
 module Types
   include Dry.Types()
+  extend Dry::Typescript
 
   StringedArray = Types::Array.of(Types::String)
   StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
@@ -57,9 +59,7 @@ end
 You can run the dry-typescript compiler like so:
 
 ```ruby
-require 'dry/typescript'
-
-Dry::Typescript.generate(Types, filename: 'path/to/types.d.ts')
+Types.to_typescript(filename: 'path/to/types.d.ts')
 ```
 
 Which will generate a file with the following contents:
@@ -87,8 +87,8 @@ export interface MyStruct {
 
 ## Supported Types
 
-- All built-in nominal types from dry-types, see: https://dry-rb.org/gems/dry-types/1.7/built-in-types/
-- Hashes with schemas, exported as Typescript types 
+- All built-in strict and nominal types from dry-types, see: https://dry-rb.org/gems/dry-types/1.7/built-in-types/
+- Hashes with schemas, exported as Typescript types
 - `Dry::Struct`, including nested attributes, exported as Typescript interfaces
 - dry-types Sums, exported as Typescript unions
 - Arrays, including typed arrays

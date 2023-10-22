@@ -1,11 +1,35 @@
 # frozen_string_literal: true
 
-require_relative "typescript/version"
-require_relative "typescript/compiler"
+require 'dry-types'
+require 'dry/typescript/version'
+
 
 module Dry
   module Typescript
-    def self.generate(types_module:, filename: nil)
+
+    def self.included(*)
+      raise "use extend with Dry::Typescript, not include"
+    end
+
+    def self.extended(_base)
+      Dry::Types.define_builder(:ts, &method(:typescript_builder))
+    end
+
+    def self.typescript_builder(type, name_or_opts=nil, opts={})
+      if name_or_opts.is_a?(Hash)
+        opts = name_or_opts
+        name = nil
+      elsif name_or_opts.is_a?(String) || name_or_opts.is_a?(Symbol)
+        name = name_or_opts
+      else
+        raise ArgumentError, ".ts expects at least a String, Symbol, or Hash of options, received #{name_or_opts.inspect}"
+      end
+
+      ts = type.meta.fetch(:ts, {})
+      type.meta(ts: ts.merge(name: name || ts.fetch(:name, nil), **opts))
+    end
+
+    def self.generate(types_module, filename: nil)
       compiler = Compiler.new(types_module)
       type_definitions = compiler.compile
 
@@ -19,5 +43,12 @@ module Dry
 
       type_definitions
     end
+
+    def to_typescript(filename: nil)
+      Dry::Typescript.generate(self, filename: filename)
+    end
   end
 end
+
+require 'dry/typescript/dry_types'
+require 'dry/typescript/compiler'

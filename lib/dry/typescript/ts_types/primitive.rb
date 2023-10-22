@@ -20,7 +20,8 @@ module Dry
           "FalseClass" => "boolean",
           "Float" => "number",
           "BigDecimal" => "number",
-          "Integer" => "number"
+          "Integer" => "number",
+          "Array"   => "Array<any>"
         }.freeze
 
         def typescript_value

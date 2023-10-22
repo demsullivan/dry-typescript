@@ -21,17 +21,9 @@ module Dry
       end
 
       def self.visit_constrained(constraints)
-        type = constrained_type(constraints)
+        ts_type, opts = constraints.map { |constraint| visit(constraint) }
 
-        if type == Hash
-          hsh = build_hash_schema(constraints)
-          TsTypes::Object.new(schema: hsh)
-        elsif type == Array
-          element_type = extract_array_element_type(constraints)
-          TsTypes::Array.new(type: element_type)
-        else
-          TsTypes::Primitive.new(type_name: type)
-        end
+        ts_type
       end
 
       def self.visit_sum(rest)
@@ -50,15 +42,27 @@ module Dry
       end
 
       def self.visit_struct(rest)
-        hsh = build_hash_schema(rest.dig(1, 1))
-        TsTypes::Object.new(schema: hsh, interface: true)
+        _, rest = rest
+
+        ts_type, _ = visit(rest)
+
+        TsTypes::Object.new(
+          schema:    ts_type.schema,
+          render_as: "interface"
+        )
+      end
+
+      def self.visit_constructor(rest)
+        mapped = rest.map { |node| visit(node) }
       end
 
       def self.visit_schema(rest)
-        definitions = rest[0]
-        definitions
+        definitions, _ = rest
+        schema = definitions
           .map { |definition| visit(definition) }
           .reduce({}, &:merge)
+
+        TsTypes::Object.new(schema: schema)
       end
 
       def self.visit_key(rest)
@@ -74,11 +78,17 @@ module Dry
       end
 
       def self.visit_array(rest)
-        { array: visit(rest.first) }
+        TsTypes::Array.new(type: visit(rest.first))
+      end
+
+      def self.visit_nominal(rest)
+        type, _ = rest
+
+        TsTypes::Primitive.new(type_name: type)
       end
 
       def self.visit_hash(_rest)
-        {}
+        TsTypes::Object.new(schema: {})
       end
 
       def self.visit_predicate(_rest)

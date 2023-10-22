@@ -2,6 +2,11 @@
 
 require "dry-types"
 
-module DryTypes
+module Dry::Typescript::DryTypes
   include Dry.Types()
+  extend Dry::Typescript
+
+  TypeOptions = Hash.schema(
+    ignore: Bool.default(false),
+  )
 end

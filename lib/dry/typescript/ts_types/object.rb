@@ -7,10 +7,10 @@ module Dry
     module TsTypes
       class Object < Type
         attribute :schema, DryTypes::Hash.optional
-        attribute :interface, DryTypes::Bool.default(false)
+        attribute :render_as, DryTypes::String.default("type").enum(*%w[type interface const])
 
         def typescript_keyword
-          interface ? "interface" : "type"
+          render_as
         end
 
         def typescript_value

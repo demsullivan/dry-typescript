@@ -8,6 +8,7 @@ module Dry
     module TsTypes
       class Type < Dry::Struct
         attribute? :name, DryTypes::String
+        attribute? :alias, DryTypes::String
 
         def to_typescript(name_override = nil)
           name = name_override || self.name
