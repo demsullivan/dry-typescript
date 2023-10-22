@@ -17,7 +17,7 @@ module Dry
         end
       end
 
-      type_definitions.map(&:to_s)
+      type_definitions
     end
   end
 end
