@@ -5,8 +5,6 @@ require 'spec_helper'
 require 'dry-struct'
 require 'dry/typescript/compiler'
 
-Types = Dry::Typescript::Types
-
 RSpec.describe "Structs" do
   subject { Dry::Typescript::Compiler.new(types_module) }
 
@@ -21,7 +19,7 @@ RSpec.describe "Structs" do
 
     it "generates a type definition" do
       expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type SimpleStruct = {
+        export interface SimpleStruct = {
           a: string
         }
       TYPESCRIPT
@@ -39,7 +37,7 @@ RSpec.describe "Structs" do
 
     it "generates a type definition" do
       expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type SimpleStruct = {
+        export interface SimpleStruct = {
           a?: string
         }
       TYPESCRIPT
@@ -60,7 +58,7 @@ RSpec.describe "Structs" do
 
     it "generates a type definition" do
       expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type NestedStruct = {
+        export interface NestedStruct = {
           nested: {
           a: string
         }

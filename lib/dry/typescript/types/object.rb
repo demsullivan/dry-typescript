@@ -7,6 +7,11 @@ module Dry
     module Types
       class Object < Type
         option :schema, optional: true
+        option :interface, default: -> { false }
+
+        def typescript_keyword
+          interface ? "interface" : "type"
+        end
 
         def typescript_value
           if schema.nil? || schema.empty?

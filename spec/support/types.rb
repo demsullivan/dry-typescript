@@ -2,10 +2,6 @@
 
 require 'dry-types'
 
-module Dry
-  module Typescript
-    module Types
-      include Dry.Types()
-    end
-  end
+module Types
+  include Dry.Types()
 end

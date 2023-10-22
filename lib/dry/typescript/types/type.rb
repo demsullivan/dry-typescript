@@ -14,10 +14,14 @@ module Dry
           name = name_override || self.name
 
           if !name.nil?
-            "export type #{name} = #{typescript_value}"
+            "export #{typescript_keyword} #{name} = #{typescript_value}"
           else
             typescript_value
           end
+        end
+
+        def typescript_keyword
+          "type"
         end
 
         def typescript_value

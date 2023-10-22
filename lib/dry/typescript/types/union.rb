@@ -11,8 +11,9 @@ module Dry
         def typescript_value
           return "boolean" if is_boolean?
 
-          value = cleaned_types.map { |t| t.to_typescript }.join(" | ")
-          is_nullable? ? "#{value} | null" : value
+          values = cleaned_types.map { |t| t.to_typescript }
+          values << "null" if is_nullable?
+          values.join(" | ")
         end
 
         def cleaned_types

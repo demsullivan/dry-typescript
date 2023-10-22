@@ -4,6 +4,7 @@ require_relative './types/primitive'
 require_relative './types/object'
 require_relative './types/union'
 require_relative './types/enum'
+require_relative './types/array'
 
 module Dry
   module Typescript
@@ -25,6 +26,9 @@ module Dry
         if type == Hash
           hsh = build_hash_schema(constraints)
           Types::Object.new(schema: hsh)
+        elsif type == Array
+          element_type = extract_array_element_type(constraints)
+          Types::Array.new(type: element_type)
         else
           Types::Primitive.new(type_name: type)
         end
@@ -32,7 +36,13 @@ module Dry
 
       def self.visit_sum(rest)
         types = rest.map { |type| type.is_a?(Array) ? visit(type) : nil }.compact
-        Types::Union.new(types: types)
+        type = Types::Union.new(types: types)
+
+        if type.is_boolean?
+          Types::Primitive.new(type_name: "boolean")
+        else
+          type
+        end
       end
 
       def self.visit_enum(rest)
@@ -41,7 +51,7 @@ module Dry
 
       def self.visit_struct(rest)
         hsh = build_hash_schema(rest.dig(1, 1))
-        Types::Object.new(schema: hsh)
+        Types::Object.new(schema: hsh, interface: true)
       end
 
       def self.visit_schema(rest)
@@ -59,20 +69,35 @@ module Dry
         { name => visit(opts) }
       end
 
-      def self.visit_hash(rest)
+      def self.visit_any(_rest)
+        Types::Primitive.new(type_name: "any")
+      end
+
+      def self.visit_array(rest)
+        { array: visit(rest.first) }
+      end
+
+      def self.visit_hash(_rest)
         {}
       end
 
-      def self.visit_predicate(rest)
+      def self.visit_predicate(_rest)
         {}
       end
 
-      def self.visit_method(rest)
+      def self.visit_method(_rest)
         {}
       end
 
       def self.build_hash_schema(constraints)
         constraints.map { |constraint| visit(constraint) }.reduce({}, &:merge)
+      end
+
+      def self.extract_array_element_type(constraints)
+        extracted = constraints.map { |constraint| visit(constraint) }.reduce({}, &:merge)
+        extracted[:array]
+      rescue
+        Types::Primitive.new(type_name: "any")
       end
 
       def self.constrained_type(constraints)

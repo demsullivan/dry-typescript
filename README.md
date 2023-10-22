@@ -25,6 +25,21 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## Supported Types
+
+- Common primitives, eg. `String`, `Integer`, `Decimal`, `Bool`
+- Hashes with schemas, defined as Typescript types by default
+- Dry::Struct, including nested attributes, defined as Typescript interfaces by default
+- Sums / Unions
+- Arrays
+
+## TODO
+
+- [ ] Resolving references
+- [ ] Support for interface inheritance
+- [ ] Option to instruct compiler to ignore a type
+- [ ] Validating Typescript reserved words
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

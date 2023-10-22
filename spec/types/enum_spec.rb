@@ -4,8 +4,6 @@ require 'spec_helper'
 require 'dry/typescript/compiler'
 require 'dry/typescript/types/enum'
 
-Types = Dry::Typescript::Types
-
 RSpec.describe "Enums" do
   describe "string enums" do
     describe "a simple enum" do

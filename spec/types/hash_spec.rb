@@ -4,8 +4,6 @@ require 'spec_helper'
 
 require 'dry/typescript/compiler'
 
-Types = Dry::Typescript::Types
-
 RSpec.describe "Hashes" do
 
   subject { Dry::Typescript::Compiler.new(types_module) }
