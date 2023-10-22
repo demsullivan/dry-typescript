@@ -6,7 +6,6 @@ require_relative "./ast_parser"
 module Dry
   module Typescript
     class Compiler
-      class UnsupportedTypeError < StandardError; end
 
       def initialize(subject)
         @subject = subject
@@ -23,6 +22,9 @@ module Dry
       end
 
       def visit(node)
+        # a Dry::Struct is a Module? so we explicitly check
+        # for them, because they shouldn't be treated as modules
+        # for the purposes of this compiler
         if node.is_a?(Module) && !(node < Dry::Struct)
           visit_module(node)
         else
@@ -32,12 +34,10 @@ module Dry
 
       def resolve_namespace_references; end
 
-      def visit_module(node, name: nil)
+      def visit_module(node)
         node.constants.map do |constant_name|
           constant = node.const_get(constant_name)
-
-          result = visit(constant)
-          @namespace[constant_name] = result
+          @namespace[constant_name] = visit(constant)
         end
       end
     end
