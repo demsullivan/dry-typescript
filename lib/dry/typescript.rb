@@ -12,7 +12,7 @@ module Dry
       if filename
         File.open(filename, "w") do |file|
           type_definitions.each do |type_definition|
-            file.write(type_definition.to_s)
+            file.write(type_definition)
           end
         end
       end

@@ -23,15 +23,77 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Further instructions coming soon!
+
+Check out the specs for examples of supported types and use cases, or see below for a quick example.
+
+Given a Ruby file with the following contents:
+
+```ruby
+require 'dry-types'
+require 'dry-struct'
+
+module Types
+  include Dry.Types()
+  
+  StringedArray = Types::Array.of(Types::String)
+  StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
+  NeatHash      = Types::Hash.schema(
+    name: Types::String,
+    age:  Types::Integer.optional,
+  )
+end
+
+class Types::MyStruct < Dry::Struct
+  attribute :name, Types::String
+  attribute :nullable, Types::String.optional
+  attribute? :optional, Types::String
+  attribute :address do
+    attribute :street, Types::String
+    attribute :city,   Types::String
+    attribute :state,  Types::String
+  end
+end
+```
+
+You can run the dry-typescript compiler like so:
+
+```ruby
+require 'dry/typescript'
+
+Dry::Typescript.generate(Types, filename: 'path/to/types.d.ts')
+```
+
+Which will generate a file with the following contents:
+
+```typescript
+export type StringedArray = Array<string>;
+export type StringOrIntArray = Array<string | number>;
+
+export type NeatHash = {
+  name: string;
+  age: number | null;
+}
+
+export interface MyStruct {
+  name: string;
+  nullable: string | null;
+  optional?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+  }
+}
+```
 
 ## Supported Types
 
-- Common primitives, eg. `String`, `Integer`, `Decimal`, `Bool`
-- Hashes with schemas, defined as Typescript types by default
-- Dry::Struct, including nested attributes, defined as Typescript interfaces by default
-- Sums / Unions
-- Arrays
+- All built-in nominal types from dry-types, see: https://dry-rb.org/gems/dry-types/1.7/built-in-types/
+- Hashes with schemas, exported as Typescript types 
+- `Dry::Struct`, including nested attributes, exported as Typescript interfaces
+- dry-types Sums, exported as Typescript unions
+- Arrays, including typed arrays
 
 ## TODO
 
@@ -39,6 +101,7 @@ TODO: Write usage instructions here
 - [ ] Support for interface inheritance
 - [ ] Option to instruct compiler to ignore a type
 - [ ] Validating Typescript reserved words
+- [ ] Throw warnings for unsupported dry-types, eg. `Types.Instance`, `Types.Interface`, etc.
 
 ## Development
 
