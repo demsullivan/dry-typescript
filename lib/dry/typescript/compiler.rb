@@ -1,17 +1,16 @@
 # frozen_string_literal: true
 
-require 'dry-struct'
-require_relative './ast_parser'
+require "dry-struct"
+require_relative "./ast_parser"
 
 module Dry
   module Typescript
     class Compiler
-
       class UnsupportedTypeError < StandardError; end
 
       def initialize(subject)
         @subject = subject
-        @namespace    = {}
+        @namespace = {}
       end
 
       def compile
@@ -31,9 +30,7 @@ module Dry
         end
       end
 
-      def resolve_namespace_references
-
-      end
+      def resolve_namespace_references; end
 
       def visit_module(node, name: nil)
         node.constants.map do |constant_name|

@@ -35,12 +35,12 @@ require 'dry-struct'
 
 module Types
   include Dry.Types()
-  
+
   StringedArray = Types::Array.of(Types::String)
   StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
-  NeatHash      = Types::Hash.schema(
+  NeatHash = Types::Hash.schema(
     name: Types::String,
-    age:  Types::Integer.optional,
+    age: Types::Integer.optional,
   )
 end
 
@@ -50,8 +50,8 @@ class Types::MyStruct < Dry::Struct
   attribute? :optional, Types::String
   attribute :address do
     attribute :street, Types::String
-    attribute :city,   Types::String
-    attribute :state,  Types::String
+    attribute :city, Types::String
+    attribute :state, Types::String
   end
 end
 ```

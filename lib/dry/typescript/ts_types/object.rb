@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative './type'
+require_relative "./type"
 
 module Dry
   module Typescript
-    module Types
+    module TsTypes
       class Object < Type
-        option :schema, optional: true
-        option :interface, default: -> { false }
+        attribute :schema, DryTypes::Hash.optional
+        attribute :interface, DryTypes::Bool.default(false)
 
         def typescript_keyword
           interface ? "interface" : "type"

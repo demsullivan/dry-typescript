@@ -1,20 +1,21 @@
 # frozen_string_literal: true
 
-require_relative './type'
-require 'json'
+require_relative "./type"
+require "json"
 
 module Dry
   module Typescript
-    module Types
+    module TsTypes
       class Enum < Type
-        option :values
+        attribute :values, DryTypes::Hash
 
-        class InvalidEnumError < StandardError; end
+        InvalidEnumError = Class.new(StandardError)
 
-        def to_typescript(name_override=nil)
+        def to_typescript(name_override = nil)
           name = name_override || self.name
 
           return nil if name.nil?
+
           "export enum #{name} {\n#{typescript_value}\n}\n"
         end
 

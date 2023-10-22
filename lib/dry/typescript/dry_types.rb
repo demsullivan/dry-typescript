@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'dry-types'
+require "dry-types"
 
-module Types
+module DryTypes
   include Dry.Types()
 end

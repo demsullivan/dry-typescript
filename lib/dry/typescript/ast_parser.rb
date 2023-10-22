@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require_relative './types/primitive'
-require_relative './types/object'
-require_relative './types/union'
-require_relative './types/enum'
-require_relative './types/array'
+require "dry-struct"
+require_relative "./ts_types/primitive"
+require_relative "./ts_types/object"
+require_relative "./ts_types/union"
+require_relative "./ts_types/enum"
+require_relative "./ts_types/array"
 
 module Dry
   module Typescript
     module AstParser
-
-      class UnknownNodeTypeError < StandardError; end
+      UnknownNodeTypeError = Class.new(StandardError)
 
       def self.visit(node)
         meth, rest = node
@@ -25,33 +25,33 @@ module Dry
 
         if type == Hash
           hsh = build_hash_schema(constraints)
-          Types::Object.new(schema: hsh)
+          TsTypes::Object.new(schema: hsh)
         elsif type == Array
           element_type = extract_array_element_type(constraints)
-          Types::Array.new(type: element_type)
+          TsTypes::Array.new(type: element_type)
         else
-          Types::Primitive.new(type_name: type)
+          TsTypes::Primitive.new(type_name: type)
         end
       end
 
       def self.visit_sum(rest)
         types = rest.map { |type| type.is_a?(Array) ? visit(type) : nil }.compact
-        type = Types::Union.new(types: types)
+        type = TsTypes::Union.new(types: types)
 
         if type.is_boolean?
-          Types::Primitive.new(type_name: "boolean")
+          TsTypes::Primitive.new(type_name: "boolean")
         else
           type
         end
       end
 
       def self.visit_enum(rest)
-        Types::Enum.new(values: rest.last)
+        TsTypes::Enum.new(values: rest.last)
       end
 
       def self.visit_struct(rest)
         hsh = build_hash_schema(rest.dig(1, 1))
-        Types::Object.new(schema: hsh, interface: true)
+        TsTypes::Object.new(schema: hsh, interface: true)
       end
 
       def self.visit_schema(rest)
@@ -70,7 +70,7 @@ module Dry
       end
 
       def self.visit_any(_rest)
-        Types::Primitive.new(type_name: "any")
+        TsTypes::Primitive.new(type_name: "any")
       end
 
       def self.visit_array(rest)
@@ -96,8 +96,8 @@ module Dry
       def self.extract_array_element_type(constraints)
         extracted = constraints.map { |constraint| visit(constraint) }.reduce({}, &:merge)
         extracted[:array]
-      rescue
-        Types::Primitive.new(type_name: "any")
+      rescue StandardError
+        TsTypes::Primitive.new(type_name: "any")
       end
 
       def self.constrained_type(constraints)

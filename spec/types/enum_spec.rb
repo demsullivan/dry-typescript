@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'dry/typescript/compiler'
-require 'dry/typescript/types/enum'
+require "spec_helper"
+require "dry/typescript/compiler"
+require "dry/typescript/ts_types/enum"
 
 RSpec.describe "Enums" do
   describe "string enums" do
     describe "a simple enum" do
-      let(:types_module) { module_double(SimpleEnum: Types::String.enum("a", "b")) }
+      let(:types_module) { module_double(SimpleEnum: DryTypes::String.enum("a", "b")) }
 
       subject { Dry::Typescript::Compiler.new(types_module) }
 
@@ -22,7 +22,7 @@ RSpec.describe "Enums" do
     end
 
     describe "an enum with names" do
-      let(:types_module) { module_double(NamedEnum: Types::String.enum(foo: "BAR", bar: "BAZ")) }
+      let(:types_module) { module_double(NamedEnum: DryTypes::String.enum(foo: "BAR", bar: "BAZ")) }
 
       subject { Dry::Typescript::Compiler.new(types_module) }
 
@@ -39,17 +39,17 @@ RSpec.describe "Enums" do
 
   describe "integer enums" do
     describe "without key names" do
-      let(:types_module) { module_double(SimpleEnum: Types::Integer.enum(1, 2)) }
+      let(:types_module) { module_double(SimpleEnum: DryTypes::Integer.enum(1, 2)) }
 
       subject { Dry::Typescript::Compiler.new(types_module) }
 
-      it "raises an InvalidEnumError" do
-        expect { subject.compile }.to raise_error(Dry::Typescript::Types::Enum::InvalidEnumError)
+      it "raises a Dry::Struct::Error" do
+        expect { subject.compile }.to raise_error(Dry::Typescript::TsTypes::Enum::InvalidEnumError)
       end
     end
 
     describe "with key names" do
-      let(:types_module) { module_double(NamedEnum: Types::Integer.enum(foo: 1, bar: 2)) }
+      let(:types_module) { module_double(NamedEnum: DryTypes::Integer.enum(foo: 1, bar: 2)) }
 
       subject { Dry::Typescript::Compiler.new(types_module) }
 

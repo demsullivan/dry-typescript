@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
-require 'dry-initializer'
+require "dry-struct"
+require "dry/typescript/dry_types"
 
 module Dry
   module Typescript
-    module Types
-      class Type
-        extend Dry::Initializer
+    module TsTypes
+      class Type < Dry::Struct
+        attribute? :name, DryTypes::String
 
-        option :name, optional: true
-
-        def to_typescript(name_override=nil)
+        def to_typescript(name_override = nil)
           name = name_override || self.name
 
           if !name.nil?

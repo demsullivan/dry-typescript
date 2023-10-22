@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
-require 'dry-struct'
-require 'dry/typescript/compiler'
+require "dry-struct"
+require "dry/typescript/compiler"
 
 RSpec.describe "Structs" do
   subject { Dry::Typescript::Compiler.new(types_module) }
@@ -11,7 +11,7 @@ RSpec.describe "Structs" do
   describe "with a single required attribute" do
     let(:struct) do
       Class.new(Dry::Struct) do
-        attribute :a, Types::String
+        attribute :a, DryTypes::String
       end
     end
 
@@ -29,7 +29,7 @@ RSpec.describe "Structs" do
   describe "with a single optional attribute" do
     let(:struct) do
       Class.new(Dry::Struct) do
-        attribute? :a, Types::String
+        attribute? :a, DryTypes::String
       end
     end
 
@@ -48,9 +48,9 @@ RSpec.describe "Structs" do
     let(:struct) do
       Class.new(Dry::Struct) do
         attribute :nested do
-          attribute :a, Types::String
+          attribute :a, DryTypes::String
         end
-        attribute :b, Types::String
+        attribute :b, DryTypes::String
       end
     end
 

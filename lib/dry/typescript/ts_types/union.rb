@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require_relative './type'
+require_relative "./type"
 
 module Dry
   module Typescript
-    module Types
+    module TsTypes
       class Union < Type
-        option :types
+        attribute :types, DryTypes::Array.of(TsTypes::Type)
 
         def typescript_value
           return "boolean" if is_boolean?
 
-          values = cleaned_types.map { |t| t.to_typescript }
+          values = cleaned_types.map(&:to_typescript)
           values << "null" if is_nullable?
           values.join(" | ")
         end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ModuleBuilder
   def module_double(**definitions)
     mod = Module.new
