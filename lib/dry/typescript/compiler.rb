@@ -13,6 +13,8 @@ module Dry
 
       param :mod,       type: DryTypes.Instance(Module)
 
+      CompilerError = Class.new(StandardError)
+
       def compile
         @ts_to_dry_map = {}
         namespace = build(mod)
@@ -29,6 +31,8 @@ module Dry
           ts_type  = AstParser.visit(constant.to_ast)
           @ts_to_dry_map[ts_type] = constant
           [ts_type.name || constant_name, ts_type]
+        rescue StandardError => e
+          raise CompilerError, "Error during build while processing constant #{constant_name}: #{e.message}"
         end.to_h
       end
 
