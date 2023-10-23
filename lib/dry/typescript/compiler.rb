@@ -18,7 +18,7 @@ module Dry
         namespace = build(mod)
 
         namespace.map do |name, ts_type|
-          ts_type = resolve_namespace_references(namespace, ts_type)
+          ts_type = resolve_namespace_references(ts_type, name: name, namespace: namespace)
           ts_type.to_typescript(name)
         end
       end
@@ -32,7 +32,7 @@ module Dry
         end.to_h
       end
 
-      def resolve_namespace_references(namespace, ts_type)
+      def resolve_namespace_references(ts_type, namespace:, name:)
         return ts_type unless ts_type.respond_to?(:with_transformed_types)
 
         ts_type.with_transformed_types do |contained_type|
@@ -43,9 +43,11 @@ module Dry
             dry_type == @ts_to_dry_map.fetch(namespace_type, nil)
           end.map(&:first)
 
-          type_name = found_names.first
+          type_name = found_names.last
 
-          puts "Duplicate types found: #{found_names.join(", ")}; using #{type_name}" if found_names.count > 1
+          Warning.warn "[dry-typescript] Duplicate types found while trying to resolve references within #{name}: #{found_names.join(", ")}. " \
+                         "By default, dry-typescript will use #{type_name}. If this is not the intended choice, you can add type aliases " \
+                         "to the duplicate types by using `.ts('Alias')` on the dry-types definition." if found_names.count > 1
 
           type_name.nil? ? contained_type : TsTypes::Reference.new(name: type_name.to_s)
         end
