@@ -16,7 +16,22 @@ RSpec.describe "Named references" do
       end
     end
 
-    it "flags duplicate type values"
+    it "flags duplicate type values" do
+      expect(Warning).to receive(:warn).with(/Duplicate types found/).at_least(:once)
+      subject.compile
+    end
+
+    it "generates a type definition using the last named reference" do
+      allow(Warning).to receive(:warn) # patch Warning to clean up rspec output
+      expect(subject.compile.join(";\n")).to include(<<~TYPESCRIPT.strip)
+        export type UUID = string;
+        export type Email = string;
+        export type User = {
+          id: Email
+          email: Email
+        }
+      TYPESCRIPT
+    end
   end
 
   describe "multiple type aliases of the same type with manual alias" do
