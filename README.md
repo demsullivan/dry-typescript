@@ -1,5 +1,9 @@
 # Dry::Typescript
 
+> [!WARNING]
+> This gem is currently in pre-release and is not yet intended for production use cases. As such,
+> it has not been published to rubygems.
+
 This gem provides a simple way to generate Typescript type definitions from [dry-types](https://dry-rb.org/gems/dry-types/1.7/)
 and [dry-struct](https://dry-rb.org/gems/dry-struct/1.6/).
 
@@ -8,7 +12,9 @@ and [dry-struct](https://dry-rb.org/gems/dry-struct/1.6/).
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'dry-typescript'
+gem 'dry-typescript',
+    git: "https://github.com/demsullivan/dry-typescript",
+    branch: "0.1.0-pre1"
 ```
 
 And then execute:
