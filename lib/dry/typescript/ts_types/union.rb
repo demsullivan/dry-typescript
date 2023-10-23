@@ -8,11 +8,16 @@ module Dry
       class Union < Type
         attribute :types, DryTypes::Array.of(TsTypes::Type)
 
+        def with_transformed_types
+          new_types = self.types.map {|type| yield type }
+          self.class.new(name: name, types: new_types)
+        end
+
         def typescript_value
-          return "boolean" if is_boolean?
+          return "boolean" if boolean?
 
           values = cleaned_types.map(&:to_typescript)
-          values << "null" if is_nullable?
+          values << "null" if nullable?
           values.join(" | ")
         end
 
@@ -20,12 +25,13 @@ module Dry
           types.reject { |type| type.is_a?(Primitive) && type.type_name.to_s == "NilClass" }
         end
 
-        def is_nullable?
+        def nullable?
           types.count == 2 && \
             types.any? { |type| type.is_a?(Primitive) && type.type_name.to_s == "NilClass" }
         end
 
-        def is_boolean?
+        def boolean?
+          # Dry::Types::Bool is actually a sum of Dry::Types::True and Dry::Types::False
           types.count == 2 && \
             types.all? { |type| type.is_a?(Primitive) } && \
             types.map(&:type_name).map(&:to_s).sort == %w[FalseClass TrueClass]

@@ -7,8 +7,12 @@ module Dry
   module Typescript
     module TsTypes
       class Type < Dry::Struct
-        attribute? :name, DryTypes::String
-        attribute? :alias, DryTypes::String
+        attribute? :name, DryTypes::String.optional
+        attribute? :dry_type
+
+        def ==(other)
+          other.is_a?(self.class) && self.dry_type == other.dry_type
+        end
 
         def to_typescript(name_override = nil)
           name = name_override || self.name

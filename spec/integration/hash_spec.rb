@@ -13,9 +13,7 @@ RSpec.describe "Hashes" do
         let(:types_module) { module_double(Hash: dry_types::Hash) }
 
         it "generates a type definition" do
-          expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type Hash = { [key: any]: any }
-      TYPESCRIPT
+          expect(subject.compile).to include("export type Hash = { [key: any]: any }")
         end
       end
 
@@ -23,9 +21,7 @@ RSpec.describe "Hashes" do
         let(:types_module) { module_double(EmptySchema: dry_types::Hash.schema({})) }
 
         it "generates a type definition" do
-          expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type EmptySchema = { [key: any]: any }
-      TYPESCRIPT
+          expect(subject.compile).to include("export type EmptySchema = { [key: any]: any }")
         end
       end
 
@@ -33,11 +29,7 @@ RSpec.describe "Hashes" do
         let(:types_module) { module_double(SimpleHash: dry_types::Hash.schema(a: Dry::Typescript::DryTypes::String)) }
 
         it "generates a type definition" do
-          expect(subject.compile).to include(<<~TYPESCRIPT)
-        export type SimpleHash = {
-          a: string
-        }
-      TYPESCRIPT
+          expect(subject.compile).to include("export type SimpleHash = {\n  a: string\n}")
         end
       end
     end

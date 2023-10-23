@@ -6,12 +6,15 @@ require 'dry/typescript/version'
 
 module Dry
   module Typescript
-
     def self.included(*)
       raise "use extend with Dry::Typescript, not include"
     end
 
-    def self.extended(_base)
+    def self.extended(base)
+      @registry ||= []
+      @registry << base
+
+      # TODO: figure out how to do this only once...
       Dry::Types.define_builder(:ts, &method(:typescript_builder))
     end
 
@@ -34,7 +37,7 @@ module Dry
       type_definitions = compiler.compile
 
       if filename
-        File.open(filename, "w") do |file|
+        File.open(filename, "w+") do |file|
           type_definitions.each do |type_definition|
             file.write(type_definition)
           end
@@ -42,6 +45,12 @@ module Dry
       end
 
       type_definitions
+    end
+
+    def self.generate_from_registry(filename: nil)
+      @registry.map do |types_module|
+        generate(types_module, filename: filename)
+      end.flatten
     end
 
     def to_typescript(filename: nil)

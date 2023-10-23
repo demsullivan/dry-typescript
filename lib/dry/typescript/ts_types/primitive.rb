@@ -24,6 +24,11 @@ module Dry
           "Array"   => "Array<any>"
         }.freeze
 
+        def with_transformed_types
+          new_type_name = yield type_name
+          self.class.new(name: name, type_name: new_type_name)
+        end
+
         def typescript_value
           if type_name.is_a?(String)
             type_name

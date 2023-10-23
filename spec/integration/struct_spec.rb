@@ -18,11 +18,7 @@ RSpec.describe "Structs" do
     let(:types_module) { module_double(SimpleStruct: struct) }
 
     it "generates a type definition" do
-      expect(subject.compile).to include(<<~TYPESCRIPT)
-        export interface SimpleStruct = {
-          a: string
-        }
-      TYPESCRIPT
+      expect(subject.compile).to include("export interface SimpleStruct = {\n  a: string\n}")
     end
   end
 
@@ -36,11 +32,7 @@ RSpec.describe "Structs" do
     let(:types_module) { module_double(SimpleStruct: struct) }
 
     it "generates a type definition" do
-      expect(subject.compile).to include(<<~TYPESCRIPT)
-        export interface SimpleStruct = {
-          a?: string
-        }
-      TYPESCRIPT
+      expect(subject.compile).to include("export interface SimpleStruct = {\n  a?: string\n}")
     end
   end
 
@@ -57,15 +49,7 @@ RSpec.describe "Structs" do
     let(:types_module) { module_double(NestedStruct: struct) }
 
     it "generates a type definition" do
-      expect(subject.compile).to include(<<~TYPESCRIPT)
-        export interface NestedStruct = {
-          nested: {
-          a: string
-        }
-
-        b: string
-        }
-      TYPESCRIPT
+      expect(subject.compile).to include("export interface NestedStruct = {\n  nested: {\n  a: string\n}\n  b: string\n}")
     end
   end
 end

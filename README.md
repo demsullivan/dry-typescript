@@ -34,11 +34,10 @@ require 'dry/typescript'
 
 module Types
   include Dry.Types()
-  extend Dry::Typescript
 
-  StringedArray = Types::Array.of(Types::String)
+  StringedArray    = Types::Array.of(Types::String)
   StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
-  NeatHash = Types::Hash.schema(
+  NeatHash         = Types::Hash.schema(
     name: Types::String,
     age: Types::Integer.optional,
   )
@@ -54,12 +53,21 @@ class Types::MyStruct < Dry::Struct
     attribute :state, Types::String
   end
 end
+
+module Types::Export
+  extend Dry::Typescript
+  
+  StringedArray    = Types::StringedArray
+  StringOrIntArray = Types::StringOrIntArray
+  MyStruct         = Types::MyStruct
+  NeatHash         = Types::NeatHash
+end
 ```
 
 You can run the dry-typescript compiler like so:
 
 ```ruby
-Types.to_typescript(filename: 'path/to/types.d.ts')
+Types::Export.to_typescript(filename: 'path/to/types.d.ts')
 ```
 
 Which will generate a file with the following contents:

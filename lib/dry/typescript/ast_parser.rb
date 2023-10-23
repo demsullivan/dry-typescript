@@ -21,8 +21,7 @@ module Dry
       end
 
       def self.visit_constrained(constraints)
-        ts_type, opts = constraints.map { |constraint| visit(constraint) }
-
+        ts_type, _ = constraints.map { |constraint| visit(constraint) }
         ts_type
       end
 
@@ -30,7 +29,7 @@ module Dry
         types = rest.map { |type| type.is_a?(Array) ? visit(type) : nil }.compact
         type = TsTypes::Union.new(types: types)
 
-        if type.is_boolean?
+        if type.boolean?
           TsTypes::Primitive.new(type_name: "boolean")
         else
           type
@@ -57,12 +56,13 @@ module Dry
       end
 
       def self.visit_schema(rest)
-        definitions, _ = rest
+        definitions, _, meta = rest
+
         schema = definitions
           .map { |definition| visit(definition) }
           .reduce({}, &:merge)
 
-        TsTypes::Object.new(schema: schema)
+        TsTypes::Object.new(name: meta.dig(:ts, :name), schema: schema)
       end
 
       def self.visit_key(rest)
@@ -78,13 +78,14 @@ module Dry
       end
 
       def self.visit_array(rest)
-        TsTypes::Array.new(type: visit(rest.first))
+        rest, meta = rest
+        TsTypes::Array.new(name: meta.dig(:ts, :name), type: visit(rest))
       end
 
       def self.visit_nominal(rest)
-        type, _ = rest
+        type, meta = rest
 
-        TsTypes::Primitive.new(type_name: type)
+        TsTypes::Primitive.new(name: meta.dig(:ts, :name), type_name: type)
       end
 
       def self.visit_hash(_rest)
@@ -97,24 +98,6 @@ module Dry
 
       def self.visit_method(_rest)
         {}
-      end
-
-      def self.build_hash_schema(constraints)
-        constraints.map { |constraint| visit(constraint) }.reduce({}, &:merge)
-      end
-
-      def self.extract_array_element_type(constraints)
-        extracted = constraints.map { |constraint| visit(constraint) }.reduce({}, &:merge)
-        extracted[:array]
-      rescue StandardError
-        TsTypes::Primitive.new(type_name: "any")
-      end
-
-      def self.constrained_type(constraints)
-        predicates = constraints.find { |constraint| constraint[0] == :predicate }
-        type_predicate = predicates.find { |predicates| predicates[0] == :type? }
-
-        type_predicate[1].find { |type| type[0] == :type }[1]
       end
     end
   end
