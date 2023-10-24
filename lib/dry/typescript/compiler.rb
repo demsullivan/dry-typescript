@@ -15,7 +15,13 @@ module Dry
 
       BuildError               = Class.new(StandardError)
       NamespaceResolutionError = Class.new(StandardError)
-      ConversionError          = Class.new(StandardError)
+      ExportError              = Class.new(StandardError)
+
+      class TypescriptError
+        def self.===(exception)
+          exception.class.name =~ /Dry::Typescript/
+        end
+      end
 
       def compile
         @ts_to_dry_map = {}
@@ -26,8 +32,10 @@ module Dry
 
           begin
             ts_type.to_typescript(name)
+          rescue TypescriptError
+            raise
           rescue StandardError => e
-            raise ConversionError, "Encountered error in #to_typescript for #{name}: #{e}"
+            raise ExportError, "Encountered error exporting #{name}: #{e.class.name}: #{e.message}"
           end
         end
       end

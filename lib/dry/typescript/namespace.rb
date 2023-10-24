@@ -21,6 +21,10 @@ module Dry
         @registry
       end
 
+      def self.clear!
+        @registry = {}
+      end
+
       def self.resolved
         duplicate_names = []
 

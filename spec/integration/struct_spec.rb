@@ -6,7 +6,7 @@ require "dry-struct"
 require "dry/typescript/compiler"
 
 RSpec.describe "Structs" do
-  subject { Dry::Typescript::Compiler.new(types_module) }
+  subject { Dry::Typescript::Compiler.new(namespace) }
 
   describe "with a single required attribute" do
     let(:struct) do
@@ -15,7 +15,7 @@ RSpec.describe "Structs" do
       end
     end
 
-    let(:types_module) { module_double(SimpleStruct: struct) }
+    let(:namespace) { ts_namespace(SimpleStruct: struct) }
 
     it "generates a type definition" do
       expect(subject.compile).to include("export interface SimpleStruct = {\n  a: string\n}")
@@ -29,7 +29,7 @@ RSpec.describe "Structs" do
       end
     end
 
-    let(:types_module) { module_double(SimpleStruct: struct) }
+    let(:namespace) { ts_namespace(SimpleStruct: struct) }
 
     it "generates a type definition" do
       expect(subject.compile).to include("export interface SimpleStruct = {\n  a?: string\n}")
@@ -46,7 +46,7 @@ RSpec.describe "Structs" do
       end
     end
 
-    let(:types_module) { module_double(NestedStruct: struct) }
+    let(:namespace) { ts_namespace(NestedStruct: struct) }
 
     it "generates a type definition" do
       expect(subject.compile).to include("export interface NestedStruct = {\n  nested: {\n  a: string\n}\n  b: string\n}")

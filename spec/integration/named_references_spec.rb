@@ -5,14 +5,18 @@ require 'dry/typescript/compiler'
 require 'dry/typescript/dry_types'
 
 RSpec.describe "Named references" do
-  subject { Dry::Typescript::Compiler.new(types_module) }
+  subject { Dry::Typescript::Compiler.new(Dry::Typescript::Namespace) }
+
+  after(:each) { Dry::Typescript::Namespace.clear! }
 
   describe "multiple type aliases of the same type without manual alias" do
-    let(:types_module) do
-      Module.new.tap do |mod|
-        mod::UUID  = Dry::Typescript::DryTypes::String
-        mod::Email = Dry::Typescript::DryTypes::String
-        mod::User  = Dry::Typescript::DryTypes::Hash.schema(id: mod::UUID, email: mod::Email)
+    let!(:type_module) do
+      Module.new do
+        extend Dry::Typescript
+
+        ts_export self::UUID  = Dry::Typescript::DryTypes::String
+        ts_export self::Email = Dry::Typescript::DryTypes::String
+        ts_export self::User  = Dry::Typescript::DryTypes::Hash.schema(id: self::UUID, email: self::Email)
       end
     end
 
@@ -20,13 +24,15 @@ RSpec.describe "Named references" do
   end
 
   describe "multiple type aliases of the same type with manual alias" do
-    let(:types_module) do
-      Module.new.tap do |mod|
+    let!(:type_module) do
+      Module.new do
         extend Dry::Typescript
 
-        mod::UUID  = Dry::Typescript::DryTypes::String.ts('UUID')
-        mod::Email = Dry::Typescript::DryTypes::String.ts('Email')
-        mod::User  = Dry::Typescript::DryTypes::Hash.schema(id: mod::UUID, email: mod::Email)
+        # assigning constants within a Module.new block doesn't actually assign them
+        # to the module for some reason, so we have to prefix them with self::
+        ts_export self::UUID  = Dry::Typescript::DryTypes::String.ts_alias('UUID')
+        ts_export self::Email = Dry::Typescript::DryTypes::String.ts_alias('Email')
+        ts_export self::User  = Dry::Typescript::DryTypes::Hash.schema(id: self::UUID, email: self::Email)
       end
     end
 
@@ -46,10 +52,12 @@ RSpec.describe "Named references" do
 
 
   describe "in an array, without a manual alias" do
-    let(:types_module) do
-      Module.new.tap do |mod|
-        mod::User  = Dry::Typescript::DryTypes::Hash.schema(name: Dry::Typescript::DryTypes::String)
-        mod::Users = Dry::Typescript::DryTypes::Array.of(mod::User)
+    let!(:type_module) do
+      Module.new do
+        extend Dry::Typescript
+
+        ts_export self::User  = Dry::Typescript::DryTypes::Hash.schema(name: Dry::Typescript::DryTypes::String)
+        ts_export self::Users = Dry::Typescript::DryTypes::Array.of(self::User)
       end
     end
 
@@ -64,10 +72,12 @@ RSpec.describe "Named references" do
   end
 
   describe "in an array, with a manual alias" do
-    let(:types_module) do
-      Module.new.tap do |mod|
-        mod::User  = Dry::Typescript::DryTypes::Hash.schema(name: Dry::Typescript::DryTypes::String).ts('MyUser')
-        mod::Users = Dry::Typescript::DryTypes::Array.of(mod::User)
+    let!(:type_module) do
+      Module.new do
+        extend Dry::Typescript
+
+        ts_export self::User  = Dry::Typescript::DryTypes::Hash.schema(name: Dry::Typescript::DryTypes::String).ts_alias('MyUser')
+        ts_export self::Users = Dry::Typescript::DryTypes::Array.of(self::User)
       end
     end
 

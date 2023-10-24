@@ -36,31 +36,4 @@ RSpec.describe "Module extensions" do
       TYPESCRIPT
     end
   end
-
-  describe "single module extension" do
-    let(:mod) do
-      mod = Module.new do
-        extend Dry::Typescript
-      end
-
-      mod::UUID  = Dry::Typescript::DryTypes::String.ts('UUID')
-      mod::Email = Dry::Typescript::DryTypes::String.ts('Email')
-      mod::User  = Dry::Typescript::DryTypes::Hash.schema(id: mod::UUID, email: mod::Email)
-
-      mod
-    end
-
-    describe "#to_typescript" do
-      it "generates a type definition" do
-        expect(mod.to_typescript.join(";\n")).to eq(<<~TYPESCRIPT.strip)
-          export type UUID = string;
-          export type Email = string;
-          export type User = {
-            id: UUID
-            email: Email
-          }
-        TYPESCRIPT
-      end
-    end
-  end
 end
