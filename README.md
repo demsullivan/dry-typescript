@@ -40,13 +40,15 @@ require 'dry/typescript'
 
 module Types
   include Dry.Types()
-
-  StringedArray    = Types::Array.of(Types::String)
-  StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
-  NeatHash         = Types::Hash.schema(
+  extend Dry::Typescript
+  
+  ts_export StringedArray    = Types::Array.of(Types::String)
+  ts_export StringOrIntArray = Types::Array.of(Types::String | Types::Integer)
+  ts_export NeatHash         = Types::Hash.schema(
     name: Types::String,
     age: Types::Integer.optional,
   )
+  ts_export Types::MyStruct
 end
 
 class Types::MyStruct < Dry::Struct
@@ -58,15 +60,6 @@ class Types::MyStruct < Dry::Struct
     attribute :city, Types::String
     attribute :state, Types::String
   end
-end
-
-module Types::Export
-  extend Dry::Typescript
-  
-  StringedArray    = Types::StringedArray
-  StringOrIntArray = Types::StringOrIntArray
-  MyStruct         = Types::MyStruct
-  NeatHash         = Types::NeatHash
 end
 ```
 
@@ -101,7 +94,7 @@ export interface MyStruct {
 
 ## Supported Types
 
-- All built-in strict and nominal types from dry-types, see: https://dry-rb.org/gems/dry-types/1.7/built-in-types/
+- All built-in strict, nominal, and coercible types from dry-types, see: https://dry-rb.org/gems/dry-types/1.7/built-in-types/
 - Hashes with schemas, exported as Typescript types
 - `Dry::Struct`, including nested attributes, exported as Typescript interfaces
 - dry-types Sums, exported as Typescript unions
