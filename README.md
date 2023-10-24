@@ -14,7 +14,7 @@ Add this line to your application's Gemfile:
 ```ruby
 gem 'dry-typescript',
     git: "https://github.com/demsullivan/dry-typescript",
-    branch: "0.1.0-pre1"
+    branch: "0.1.0-pre2"
 ```
 
 And then execute:
