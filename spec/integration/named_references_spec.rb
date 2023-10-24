@@ -22,6 +22,8 @@ RSpec.describe "Named references" do
   describe "multiple type aliases of the same type with manual alias" do
     let(:types_module) do
       Module.new.tap do |mod|
+        extend Dry::Typescript
+
         mod::UUID  = Dry::Typescript::DryTypes::String.ts('UUID')
         mod::Email = Dry::Typescript::DryTypes::String.ts('Email')
         mod::User  = Dry::Typescript::DryTypes::Hash.schema(id: mod::UUID, email: mod::Email)

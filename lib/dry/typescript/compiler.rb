@@ -11,29 +11,39 @@ module Dry
     class Compiler
       extend Dry::Initializer
 
-      param :mod,       type: DryTypes.Instance(Module)
+      param :registry, type: DryTypes.Interface(:each)
 
-      CompilerError = Class.new(StandardError)
+      BuildError               = Class.new(StandardError)
+      NamespaceResolutionError = Class.new(StandardError)
+      ConversionError          = Class.new(StandardError)
 
       def compile
         @ts_to_dry_map = {}
-        namespace = build(mod)
+        namespace = build(registry)
 
         namespace.map do |name, ts_type|
           ts_type = resolve_namespace_references(ts_type, name: name, namespace: namespace)
-          ts_type.to_typescript(name)
+
+          begin
+            ts_type.to_typescript(name)
+          rescue StandardError => e
+            raise ConversionError, "Encountered error in #to_typescript for #{name}: #{e}"
+          end
         end
       end
 
-      def build(mod)
-        mod.constants.map do |constant_name|
-          constant = mod.const_get(constant_name)
-          ts_type  = AstParser.visit(constant.to_ast)
-          @ts_to_dry_map[ts_type] = constant
-          [ts_type.name || constant_name, ts_type]
+      def build(registry)
+        namespace = {}
+
+        registry.each do |constant_name, dry_type|
+          ts_type = AstParser.visit(dry_type.to_ast)
+          @ts_to_dry_map[ts_type] = dry_type
+          namespace[ts_type.name || constant_name] = ts_type
         rescue StandardError => e
-          raise CompilerError, "Error during build while processing constant #{constant_name}: #{e.message}"
-        end.to_h
+          raise BuildError, "Error during build while processing constant #{constant_name}: #{e}"
+        end
+
+        namespace
       end
 
       def resolve_namespace_references(ts_type, namespace:, name:)
@@ -55,6 +65,8 @@ module Dry
 
           type_name.nil? ? contained_type : TsTypes::Reference.new(name: type_name.to_s)
         end
+      rescue StandardError => e
+        raise NamespaceResolutionError, "Error while resolving namespace references for #{name}: #{e}"
       end
     end
   end

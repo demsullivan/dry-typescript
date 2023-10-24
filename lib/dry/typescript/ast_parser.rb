@@ -11,6 +11,8 @@ module Dry
   module Typescript
     module AstParser
       UnknownNodeTypeError = Class.new(StandardError)
+      UnknownError =         Class.new(StandardError)
+      NodeError =            Class.new(StandardError)
 
       def self.visit(node)
         meth, rest = node
@@ -18,6 +20,10 @@ module Dry
         raise UnknownNodeTypeError, "Unknown dry-types AST node type: #{meth}" unless respond_to?(:"visit_#{meth}")
 
         public_send(:"visit_#{meth}", rest)
+      rescue NodeError => e
+        raise
+      rescue StandardError => e
+        raise UnknownError, "Encountered an error while parsing AST node: #{node.inspect}\n\n#{e.message}}"
       end
 
       def self.visit_constrained(constraints)
@@ -26,7 +32,7 @@ module Dry
       end
 
       def self.visit_sum(rest)
-        types = rest.map { |type| type.is_a?(Array) ? visit(type) : nil }.compact
+        types = rest.map { |type| type.is_a?(Array) ? visit(type) : nil }.flatten.compact
         type = TsTypes::Union.new(types: types)
 
         if type.boolean?
@@ -34,10 +40,14 @@ module Dry
         else
           type
         end
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing sum node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_enum(rest)
         TsTypes::Enum.new(values: rest.last)
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing enum node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_struct(rest)
@@ -49,10 +59,15 @@ module Dry
           schema:    ts_type.schema,
           render_as: "interface"
         )
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing struct node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_constructor(rest)
-        mapped = rest.map { |node| visit(node) }
+        ts_type, _ = rest.map { |node| visit(node) }
+        ts_type
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing constructor node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_schema(rest)
@@ -60,9 +75,12 @@ module Dry
 
         schema = definitions
           .map { |definition| visit(definition) }
+          .compact
           .reduce({}, &:merge)
 
         TsTypes::Object.new(name: meta.dig(:ts, :name), schema: schema)
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing schema node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_key(rest)
@@ -71,6 +89,8 @@ module Dry
         name = required ? name : "#{name}?"
 
         { name => visit(opts) }
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing key node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_any(_rest)
@@ -80,12 +100,16 @@ module Dry
       def self.visit_array(rest)
         rest, meta = rest
         TsTypes::Array.new(name: meta.dig(:ts, :name), type: visit(rest))
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing array node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_nominal(rest)
         type, meta = rest
 
         TsTypes::Primitive.new(name: meta.dig(:ts, :name), type_name: type)
+      rescue Dry::Struct::Error => e
+        raise NodeError, "Error parsing nominal node: #{rest.inspect}\n\n#{e.message}"
       end
 
       def self.visit_hash(_rest)
@@ -93,11 +117,15 @@ module Dry
       end
 
       def self.visit_predicate(_rest)
-        {}
+        nil
       end
 
       def self.visit_method(_rest)
-        {}
+        nil
+      end
+
+      def self.visit_id(_rest)
+        nil
       end
     end
   end

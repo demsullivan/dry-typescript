@@ -2,7 +2,7 @@
 
 require 'dry-types'
 require 'dry/typescript/version'
-
+require 'dry/typescript/namespace'
 
 module Dry
   module Typescript
@@ -11,29 +11,16 @@ module Dry
     end
 
     def self.extended(base)
-      @registry ||= []
-      @registry << base
-
-      # TODO: figure out how to do this only once...
-      Dry::Types.define_builder(:ts, &method(:typescript_builder))
+      Dry::Types.define_builder(:ts_alias, &method(:add_alias_to_type)) unless Dry::Types::Builder.method_defined?(:ts_alias)
     end
 
-    def self.typescript_builder(type, name_or_opts=nil, opts={})
-      if name_or_opts.is_a?(Hash)
-        opts = name_or_opts
-        name = nil
-      elsif name_or_opts.is_a?(String) || name_or_opts.is_a?(Symbol)
-        name = name_or_opts
-      else
-        raise ArgumentError, ".ts expects at least a String, Symbol, or Hash of options, received #{name_or_opts.inspect}"
-      end
-
+    def self.add_alias_to_type(type, name)
       ts = type.meta.fetch(:ts, {})
-      type.meta(ts: ts.merge(name: name || ts.fetch(:name, nil), **opts))
+      type.meta(ts: ts.merge(name: name))
     end
 
-    def self.generate(types_module, filename: nil)
-      compiler = Compiler.new(types_module)
+    def self.export(namespaces = [Namespace], filename: nil)
+      compiler = Compiler.new(namespaces.inject(&:merge))
       type_definitions = compiler.compile
 
       if filename
@@ -47,14 +34,8 @@ module Dry
       type_definitions
     end
 
-    def self.generate_from_registry(filename: nil)
-      @registry.map do |types_module|
-        generate(types_module, filename: filename)
-      end.flatten
-    end
-
-    def to_typescript(filename: nil)
-      Dry::Typescript.generate(self, filename: filename)
+    def ts_export(type)
+      Namespace.define(self, type)
     end
   end
 end
