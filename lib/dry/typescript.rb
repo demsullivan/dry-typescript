@@ -37,6 +37,10 @@ module Dry
     def ts_export(type)
       Namespace.define(self, type)
     end
+
+    def ts_export_all(mod = self)
+      Namespace.define(mod)
+    end
   end
 end
 
