@@ -66,7 +66,7 @@ end
 You can run the dry-typescript compiler like so:
 
 ```ruby
-Types::Export.to_typescript(filename: 'path/to/types.d.ts')
+Dry::Typescript.export(filename: 'path/to/types.d.ts')
 ```
 
 Which will generate a file with the following contents:
