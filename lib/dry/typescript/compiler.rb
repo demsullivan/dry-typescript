@@ -11,7 +11,7 @@ module Dry
     class Compiler
       extend Dry::Initializer
 
-      param :registry, type: DryTypes.Interface(:each)
+      param :namespace, type: DryTypes.Interface(:each)
 
       BuildError               = Class.new(StandardError)
       NamespaceResolutionError = Class.new(StandardError)
@@ -25,10 +25,11 @@ module Dry
 
       def compile
         @ts_to_dry_map = {}
-        namespace = build(registry)
 
-        namespace.map do |name, ts_type|
-          ts_type = resolve_namespace_references(ts_type, name: name, namespace: namespace)
+        ts_namespace = build(namespace)
+
+        ts_namespace.map do |name, ts_type|
+          ts_type = resolve_namespace_references(ts_type, name: name, namespace: ts_namespace)
 
           begin
             ts_type.to_typescript(name)
@@ -40,18 +41,18 @@ module Dry
         end
       end
 
-      def build(registry)
-        namespace = {}
+      def build(dry_namespace)
+        ts_namespace = {}
 
-        registry.each do |constant_name, dry_type|
+        dry_namespace.each do |constant_name, dry_type|
           ts_type = AstParser.visit(dry_type.to_ast)
           @ts_to_dry_map[ts_type] = dry_type
-          namespace[ts_type.name || constant_name] = ts_type
+          ts_namespace[ts_type.name || constant_name] = ts_type
         rescue StandardError => e
           raise BuildError, "Error during build while processing constant #{constant_name}: #{e}"
         end
 
-        namespace
+        ts_namespace
       end
 
       def resolve_namespace_references(ts_type, namespace:, name:)
