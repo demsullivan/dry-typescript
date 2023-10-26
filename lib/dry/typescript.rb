@@ -53,18 +53,23 @@ module Dry
       if type_or_module.is_a?(Module) && !(type_or_module < Dry::Struct)
         ts_export_module(type_or_module)
       else
-        extract_constants!(export: type_or_module)
+        add_const_to_namespace(type_or_module)
+        extract_constants!
       end
     end
 
-    def extract_constants!(export: nil)
+    def extract_constants!
       constants(false).each do |const_name|
         next unless (const = const_get(const_name)).class.ancestors.include?(Dry::Types::Type)
 
         @__dry_ts_constants[const_name] = const.ts_alias(const_name.to_s)
-        Namespace[const_name] = @__dry_ts_constants[const_name] if export == const
         remove_const(const_name)
       end
+    end
+
+    def add_const_to_namespace(const, name: nil)
+      name = constants(false).find { |const_name| const_get(const_name) == const } if name.nil?
+      Namespace[name] ||= const.ts_alias(name.to_s)
     end
 
     def const_missing(const_name)
@@ -74,7 +79,7 @@ module Dry
         Warning.warn "[dry-typescript] WARN Found reference to unexported constant #{self}::#{const_name}; automatically exporting it.\n"
       end
 
-      Namespace[const_name] ||= @__dry_ts_constants[const_name]
+      add_const_to_namespace(@__dry_ts_constants[const_name], name: const_name)
       @__dry_ts_constants[const_name]
     end
 
@@ -96,7 +101,11 @@ module Dry
     end
 
     def ts_export_module(type_module)
-      type_module.extend Dry::Typescript
+      type_module.constants(false).each do |const_name|
+        next unless (const = type_module.const_get(const_name)).class.ancestors.include?(Dry::Types::Type)
+
+        add_const_to_namespace(const, name: const_name)
+      end
     end
   end
 end

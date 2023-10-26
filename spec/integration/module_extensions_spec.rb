@@ -193,11 +193,23 @@ RSpec.describe "Module extensions" do
         Module.new do
           extend Dry::Typescript
 
-          # Huh. This doesn't actually export anything. Not sure why.
-          ts_export UUID  = ModA::UUID
-          ts_export Email = ModA::Email
-          ts_export User  = ModA::User
-          ts_export Users = ModA::Users
+          # Since the references to UUID and Email from User, and to User from Users,
+          # are already defined, we don't have an opportunity to alias them properly.
+          # Exports:
+          # export type UUID = string;
+          # export type Email = string;
+          # export type User = {
+          #   id: string
+          #  email: string
+          # };
+          # export type Users = Array<{
+          #  id: string
+          #  email: string
+          # }>;
+          ts_export self::UUID  = ModA::UUID
+          ts_export self::Email = ModA::Email
+          ts_export self::User  = ModA::User
+          ts_export self::Users = ModA::Users
 
           finalize_ts_exports!
         end
@@ -218,9 +230,9 @@ RSpec.describe "Module extensions" do
         Module.new do
           extend Dry::Typescript
 
-          # This also doesn't export anything.
-          ts_export User  = ModA::User
-          ts_export Users = ModA::Users
+          # Ditto previous.
+          ts_export self::User  = ModA::User
+          ts_export self::Users = ModA::Users
 
           finalize_ts_exports!
         end
@@ -244,7 +256,7 @@ RSpec.describe "Module extensions" do
         Module.new do
           extend Dry::Typescript
 
-          # This also doesn't export anything.
+          # Ditto previous.
           ts_export WithParameter
 
           finalize_ts_exports!
